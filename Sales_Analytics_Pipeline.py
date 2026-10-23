@@ -8,9 +8,7 @@
 # MAGIC - Business Analytics and KPIs
 # MAGIC - Data Export and Visualization Preparation
 # MAGIC
-# MAGIC **Skills Demonstrated**: Data ingestion, quality checks, ETL pipeline development, customer segmentation, KPI calculation, and analytics.
-# MAGIC
-# MAGIC **Perfect for**: GitHub portfolio and job applications.
+# MAGIC The data is generated in Step 1 (1,000 transactions, fixed random seed), so every run gives the same results.
 
 # COMMAND ----------
 
@@ -19,7 +17,13 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import random
-import json
+import os
+
+# display() exists in Databricks and Jupyter; fall back to print elsewhere
+try:
+    display
+except NameError:
+    display = print
 
 print("🚀 SALES ANALYTICS PIPELINE - LIBRARIES LOADED")
 print("=" * 60)
@@ -49,7 +53,7 @@ products = [
 
 # Generate sales transactions
 sales_data = []
-start_date = datetime.now() - timedelta(days=30)
+start_date = datetime(2025, 7, 1)  # fixed, so runs are reproducible
 
 for i in range(1000):
     transaction_date = start_date + timedelta(
@@ -212,7 +216,7 @@ print(f"💰 Total Revenue: ${total_revenue:,.2f}")
 print(f"🛒 Total Transactions: {total_transactions:,}")
 print(f"📊 Average Order Value: ${avg_order_value:.2f}")
 print(f"👥 Unique Customers: {unique_customers:,}")
-print(f"🔄 Customer Retention Rate: {(customer_stats['order_count'] > 1).mean()*100:.1f}%")
+print(f"🔄 Repeat Customers: {(customer_stats['order_count'] > 1).mean()*100:.1f}%")
 
 print(f"\n🏆 TOP PERFORMING CATEGORY: {revenue_by_category.index[0]} (${revenue_by_category.iloc[0]:,.2f})")
 print(f"📱 BEST SALES CHANNEL: {revenue_by_channel.index[0]} (${revenue_by_channel.iloc[0]:,.2f})")
@@ -302,7 +306,7 @@ display(segment_analysis.reset_index())
 # COMMAND ----------
 
 # ============================================================================
-# STEP 7: EXPORT DATA FOR VISUALIZATION & REPORTING (FIXED)
+# STEP 7: EXPORT DATA TO CSV
 # ============================================================================
 print("\n💾 STEP 7: Preparing data exports...")
 
@@ -321,11 +325,13 @@ series_data = {
     "daily_revenue": daily_revenue
 }
 
-# Save to different formats (simulating real-world data outputs)
+# Write each table to output/<name>.csv
+os.makedirs("output", exist_ok=True)
 export_summary = {}
 
 # Handle DataFrames
 for name, data in datasets.items():
+    data.to_csv(f"output/{name}.csv")
     if hasattr(data, 'shape'):  # It's a DataFrame
         export_summary[name] = {
             "records": len(data),
@@ -335,6 +341,7 @@ for name, data in datasets.items():
 
 # Handle Series
 for name, data in series_data.items():
+    data.to_csv(f"output/{name}.csv")
     export_summary[name] = {
         "records": len(data),
         "data_type": "Series",
@@ -349,15 +356,15 @@ for name, info in export_summary.items():
     else:
         print(f"📊 {name}: {info['records']} data points")
 
-print("✅ All datasets prepared for export!")
+print("✅ All tables written to output/")
 
 
 # COMMAND ----------
 
 # ============================================================================
-# STEP 8: FINAL PROJECT SUMMARY & PORTFOLIO SHOWCASE
+# STEP 8: RUN SUMMARY
 # ============================================================================
-print("\n🎯 PROJECT COMPLETION SUMMARY")
+print("\n🎯 RUN SUMMARY")
 print("=" * 60)
 
 project_metrics = {
@@ -365,67 +372,37 @@ project_metrics = {
     "Data Quality Score": f"{quality_report['data_health_score']}/100",
     "Total Revenue Analyzed": f"${total_revenue:,.2f}",
     "Customer Segments Created": len(customer_stats['segment'].unique()),
-    "Business KPIs Generated": "15+",
-    "Data Transformations Applied": "8",
-    "Quality Checks Implemented": "4",
-    "Export Formats Ready": len(datasets)
+    "Tables Exported": len(datasets) + len(series_data)
 }
 
 for metric, value in project_metrics.items():
     print(f"✅ {metric}: {value}")
 
-print("\n🌟 SKILLS DEMONSTRATED:")
-skills_demonstrated = [
-    "✅ Data Ingestion & Generation",
-    "✅ Data Quality Validation",
-    "✅ ETL Pipeline Development", 
-    "✅ Business Logic Implementation",
-    "✅ Customer Segmentation",
-    "✅ KPI Calculation & Reporting",
-    "✅ Data Profiling & Analytics",
-    "✅ Performance Optimization",
-    "✅ Export & Integration Ready"
-]
-
-for skill in skills_demonstrated:
-    print(f"  {skill}")
-
-print("\n🚀 READY FOR GITHUB UPLOAD!")
-print("📋 This project showcases end-to-end data engineering capabilities")
-print("💼 Perfect for job applications and portfolio demonstrations")
-
 # COMMAND ----------
 
 # ============================================================================
-# BONUS: QUICK DATA VISUALIZATION EXAMPLES
+# KEY FIGURES
 # ============================================================================
-print("\n📊 BONUS: Data insights for presentation...")
-
-# Top 5 insights for your portfolio
+# Top 5 figures from this run
 insights = [
     f"💰 Generated ${total_revenue:,.2f} in revenue across {total_transactions:,} transactions",
     f"🏆 {revenue_by_category.index[0]} category leads with ${revenue_by_category.iloc[0]:,.2f}",
     f"📱 {revenue_by_channel.index[0]} channel performs best with ${revenue_by_channel.iloc[0]:,.2f}",
     f"⏰ Peak sales occur at {peak_hour}:00 with ${hourly_sales[peak_hour]:,.2f}",
-    f"🎖️ {(customer_stats['segment'] == 'VIP').sum()} VIP customers drive premium revenue"
+    f"🎖️ {(customer_stats['segment'] == 'VIP').sum()} VIP customers"
 ]
 
-print("\n🎯 KEY BUSINESS INSIGHTS FOR PORTFOLIO:")
+print("\n🎯 KEY FIGURES:")
 for i, insight in enumerate(insights, 1):
     print(f"  {i}. {insight}")
 
-# Sample data for showcase
+# Sample rows
 print(f"\n📋 SAMPLE PROCESSED DATA:")
 display(df_transformed[['transaction_id', 'product_name', 'total_amount', 'revenue_category', 'day_of_week']].head(3))
 
 print(f"\n👥 CUSTOMER SEGMENTATION SAMPLE:")
 display(customer_stats.head(3))
 
-print("\n" + "="*60)
-print("🎉 PROJECT COMPLETE! Ready for GitHub and job applications!")
-print("🔗 This demonstrates production-ready data engineering skills")
-print("📈 Showcases: ETL, Data Quality, Analytics, Business Intelligence")
-print("="*60)
 
 # COMMAND ----------
 
